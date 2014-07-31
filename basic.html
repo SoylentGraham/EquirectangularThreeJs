@@ -51,8 +51,9 @@
 
 		<script>
 			
+			
 			controls = null;
-gtime = 0;
+			gtime = 0;
 cubes = [];
 			function MakeCube(x,y,z,r,g,b)
 			{
@@ -91,8 +92,7 @@ var material = new THREE.ShaderMaterial( {
 		
 			var scene = new THREE.Scene();
 			var camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
-			//var camera = new THREE.CubeCamera( 0.1, 1000, 256 );
-
+			
 			var renderer = new THREE.WebGLRenderer();
 			//renderer.setFaceCulling(false);
 			renderer.setSize(window.innerWidth, window.innerHeight);
@@ -139,9 +139,12 @@ var material = new THREE.ShaderMaterial( {
 			composer.addPass( new THREE.RenderPass( scene, camera ) );
 
 
+
+
 			var effect = new THREE.ShaderPass( THREE.EquiRectScreenShader );
-			//effect.uniforms[ 'FaceF' ].value = new THREE.Vector4(0,0,1,1);
+//effect.uniforms[ 'tFace' ].value = new THREE.Vector4(0,0,1,1);
 			effect.renderToScreen = true;
+			EquiRectScreenShader_InitDebugTextures( effect );
 			composer.addPass( effect );
 
 			window.addEventListener( 'resize', onWindowResize, false );
@@ -164,6 +167,9 @@ var material = new THREE.ShaderMaterial( {
 					//cube.rotation.x += 0.01;
 					//cube.rotation.y += 0.01;
 				}
+				
+				renderer.render( scene, camera, effect.uniforms['tFace'].value[ THREE.EquiRectScreenShader.FACE_LEFT ] );
+				
 				composer.render();
 				//renderer.render(scene, camera);
 			};

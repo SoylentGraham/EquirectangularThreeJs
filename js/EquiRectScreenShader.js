@@ -1,15 +1,25 @@
 
 THREE.EquiRectScreenShader = {
 	
+FACE_UP:		0,
+FACE_LEFT:		1,
+FACE_FORWARD:	2,
+FACE_RIGHT:		3,
+FACE_BACK:		4,
+FACE_DOWN:		5,
 	/*
 	 
-	 "#define FACE_UP		0",
-	 "#define FACE_LEFT		1",
-	 "#define FACE_FORWARD	2",
-	 "#define FACE_RIGHT	3",
-	 "#define FACE_BACK		4",
-	 "#define FACE_DOWN		5",
+	 #define FACE_UP		0
+	 #define FACE_LEFT		1
+	 #define FACE_FORWARD	2
+	 #define FACE_RIGHT	3
+	 #define FACE_BACK		4
+	 #define FACE_DOWN		5
 	 */
+TextureWidth:	256,
+TextureHeight:	256,
+TextureFormat:  { format: THREE.RGBFormat, magFilter: THREE.LinearFilter, minFilter: THREE.LinearFilter },
+	
 	
 uniforms: {
 	
@@ -21,12 +31,12 @@ uniforms: {
 									   new THREE.Vector4(0,0,0,0),
 									   new THREE.Vector4(0,0,0,0),
 									   ] },
-	"tFace":	{	type: "tv", value:	[ null,
-										 null,
-										 null,
-										 null,
-										 null,
-										 null,
+	"tFace":	{	type: "tv", value:	[ new THREE.WebGLRenderTarget( this.TextureWidth, this.TextureHeight, this.TextureFormat ),
+										 new THREE.WebGLRenderTarget( this.TextureWidth, this.TextureHeight, this.TextureFormat  ),
+										 new THREE.WebGLRenderTarget( this.TextureWidth, this.TextureHeight, this.TextureFormat  ),
+										 new THREE.WebGLRenderTarget( this.TextureWidth, this.TextureHeight, this.TextureFormat  ),
+										 new THREE.WebGLRenderTarget( this.TextureWidth, this.TextureHeight, this.TextureFormat  ),
+										 new THREE.WebGLRenderTarget( this.TextureWidth, this.TextureHeight, this.TextureFormat ),
 										 ] },
 },
 	
@@ -81,13 +91,13 @@ fragmentShader: [
 				 
 				 "vec4 SampleFace(int Face,vec2 FaceUv) {",
 					//	'[]' : Index expression must be constant
-					"if ( Face == FACE_UP )			return vec4(1,0,0,1);",
-					"if ( Face == FACE_LEFT )		return vec4(0,1,0,1);",
-					"if ( Face == FACE_FORWARD )	return Sample( tDiffuse, FaceUv, uvFace[FACE_FORWARD] );",
+				//	"if ( Face == FACE_UP )			return vec4(1,0,0,1);",
+				//	"if ( Face == FACE_LEFT )		return vec4(0,1,0,1);",
+				//	"if ( Face == FACE_FORWARD )	return Sample( tDiffuse, FaceUv, uvFace[FACE_FORWARD] );",
 				 //	"if ( Face == FACE_FORWARD )	return vec4(0,0,1,1);",
-					"if ( Face == FACE_RIGHT )		return vec4(1,1,0,1);",
-					"if ( Face == FACE_BACK )		return vec4(0,1,1,1);",
-					"if ( Face == FACE_DOWN )		return vec4(1,0,1,1);",
+				//	"if ( Face == FACE_RIGHT )		return vec4(1,1,0,1);",
+				//	"if ( Face == FACE_BACK )		return vec4(0,1,1,1);",
+				///	"if ( Face == FACE_DOWN )		return vec4(1,0,1,1);",
 
 					"if ( Face == FACE_UP )			return Sample( tFace[FACE_UP], FaceUv, uvFace[FACE_UP] );",
 					"if ( Face == FACE_LEFT )		return Sample( tFace[FACE_LEFT], FaceUv, uvFace[FACE_LEFT] );",
@@ -157,3 +167,8 @@ fragmentShader: [
 				 ].join("\n")
 	
 };
+
+
+function EquiRectScreenShader_InitDebugTextures(Shader)
+{
+}
