@@ -1,0 +1,174 @@
+<html>
+	<head>
+		<title>My first Three.js app</title>
+		<style>canvas { width: 100%; height: 100% }</style>
+	</head>
+	<body>
+		<script src="js/three.min.js"></script>
+		<script src="js/OrbitControls.js"></script>
+		<script src="js/CopyShader.js"></script>
+		<script src="js/RGBShiftShader.js"></script>
+		<script src="js/EffectComposer.js"></script>
+		<script src="js/RenderPass.js"></script>
+		<script src="js/MaskPass.js"></script>
+		<script src="js/ShaderPass.js"></script>
+		<script src="js/EquiRectScreenShader.js"></script>
+		
+<script id="fragmentShader" type="x-shader/x-fragment">
+
+			uniform vec3 Colour;
+			
+
+			void main( void ) {
+				gl_FragColor = vec4(Colour.x, Colour.y, Colour.z,1);
+			}
+
+		</script>
+
+		<script id="vertexShader" type="x-shader/x-vertex">
+
+		
+#define M_PI 3.1415926535897932384626433832795
+			void main()
+			{
+				vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+			//	vec4 mvPosition = modelMatrix * vec4( position, 1.0 );
+				gl_Position = projectionMatrix * mvPosition;
+
+				if ( false )
+				{
+					vec3 normview = normalize( mvPosition.xyz / mvPosition.w );
+					vec3 xyz;
+					xyz.x = 0.5 + ( atan( normview.z, normview.x ) / (2.0* M_PI) ); 
+					xyz.y = 0.5 - ( asin( normview.y ) / M_PI ); 
+					xyz.z = normview.z; 
+				
+					gl_Position = vec4(xyz.x,xyz.y,xyz.z,1.0);
+				}
+			}
+
+		</script>
+
+		<script>
+			
+			controls = null;
+gtime = 0;
+cubes = [];
+			function MakeCube(x,y,z,r,g,b)
+			{
+var uniforms = {
+
+			Colour: { type: "v3", value: new THREE.Vector3( r, g, b ) },
+		};
+
+				var geometry = new THREE.BoxGeometry(1,1,1);
+
+				//var material = new THREE.MeshBasicMaterial({color: Colour});
+var material = new THREE.ShaderMaterial( {
+					uniforms: uniforms,
+					vertexShader: document.getElementById( 'vertexShader' ).textContent,
+					fragmentShader: document.getElementById( 'fragmentShader' ).textContent
+
+				} );
+
+				var cube = new THREE.Mesh(geometry, material);
+				cube.position.x = x;
+				cube.position.y = y;
+				cube.position.z = z;
+				cubes.push( cube );
+				return cube;
+			}
+
+			function onWindowResize() {
+	
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+	
+				renderer.setSize( window.innerWidth, window.innerHeight );
+	
+			}
+		
+		
+			var scene = new THREE.Scene();
+			var camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
+			//var camera = new THREE.CubeCamera( 0.1, 1000, 256 );
+
+			var renderer = new THREE.WebGLRenderer();
+			//renderer.setFaceCulling(false);
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			document.body.appendChild(renderer.domElement);
+
+			var hi = 1.0;
+			var me = 0.6;
+			var lo = 0.3;
+/*
+			scene.add( MakeCube(0,1,0, hi, 0, 0 ) );
+			scene.add( MakeCube(1,1,0, me, 0, 0 ) );
+			scene.add( MakeCube(1,0,0, lo, 0, 0 ) );
+
+			scene.add( MakeCube(0,-1,0, 0, hi, 0 ) );
+			scene.add( MakeCube(-1,-1,0, 0, me, 0 ) );
+			scene.add( MakeCube(-1,0,0, 0, lo, 0 ) );
+
+			scene.add( MakeCube(0,-1,0, 0, 0, hi ) );
+			scene.add( MakeCube( 1,-1,0, 0, 0, me ) );
+			scene.add( MakeCube( 1,0,0, 0, 0, lo ) );
+*/
+			var WorldDist = 10;
+			scene.add( MakeCube( -WorldDist, 0, -WorldDist, hi, 0, 0 ) );
+			scene.add( MakeCube(  WorldDist, 0, -WorldDist, 0, hi, 0 ) );
+			scene.add( MakeCube(  WorldDist, 0,  WorldDist, 0, 0, hi ) );
+			scene.add( MakeCube( -WorldDist, 0,  WorldDist, hi, hi, 0 ) );
+
+			var size = 20;
+			var step = 1;
+			var gridHelper = new THREE.GridHelper( size, step );		
+			scene.add( gridHelper );
+
+			camera.position.z = 5;
+			camera.position.y = 1;
+			//camera.position.x = 5;
+
+			controls = new THREE.OrbitControls( camera );
+			controls.damping = 0.2;
+			//controls.addEventListener( 'change', render );
+
+
+			//	setup post-processor
+			composer = new THREE.EffectComposer( renderer );
+			composer.addPass( new THREE.RenderPass( scene, camera ) );
+
+
+			var effect = new THREE.ShaderPass( THREE.EquiRectScreenShader );
+			//effect.uniforms[ 'FaceF' ].value = new THREE.Vector4(0,0,1,1);
+			effect.renderToScreen = true;
+			composer.addPass( effect );
+
+			window.addEventListener( 'resize', onWindowResize, false );
+
+
+
+			var render = function () {
+				
+				controls.update();
+				requestAnimationFrame(render);
+
+				gtime += 0.1;
+
+				for ( var c=0;	c<cubes.length;	c++ )
+				{
+					var cube = cubes[c];
+					cube.position.x += Math.sin(gtime*5.0) * 0.2;
+					cube.position.y += Math.cos(gtime*1.0) * 0.2;
+					cube.position.z += Math.sin(gtime*2.0) * 0.2;
+					//cube.rotation.x += 0.01;
+					//cube.rotation.y += 0.01;
+				}
+				composer.render();
+				//renderer.render(scene, camera);
+			};
+
+			render();
+		</script>
+	</body>
+</html>
